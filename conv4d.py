@@ -1,5 +1,4 @@
 # -*- coding: UTF-8 -*-
-from __future__ import print_function
 import tensorflow as tf
 
 def conv4d(
@@ -118,10 +117,6 @@ def conv4d(
     else:
         (l_o, d_o, h_o, w_o) = (l_i, d_i, h_i, w_i)
 
-    print("Input shape : ", (b, c_i, l_i, d_i, h_i, w_i))
-    print("Kernel shape: ", (l_k, d_k, h_k, w_k))
-    print("Output shape: ", (b, filters, l_o, d_o, h_o, w_o))
-
     # output tensors for each 3D frame
     frame_results = [ None ]*l_o
 
@@ -136,9 +131,7 @@ def conv4d(
 
             # add results to this output frame
             out_frame = j - (i - l_k/2) - (l_i - l_o)/2
-            # print("Conv of kernel %d with input %d goes to output %d"%(i, j, # out_frame))
             if out_frame < 0 or out_frame >= l_o:
-                # print("not a valid output frame, skipping")
                 continue
 
             # convolve input frame j with kernel frame i
@@ -162,17 +155,12 @@ def conv4d(
             # subsequent frame convolutions should use the same kernel
             reuse_kernel = True
 
-            # print("\tInput :", (b, c_i, d_i, h_i, w_i))
-            # print("\tKernel:", (d_k, h_k, w_k))
-            # print("\tOutput:", frame_conv3d.get_shape().as_list())
-
             if frame_results[out_frame] is None:
                 frame_results[out_frame] = frame_conv3d
             else:
                 frame_results[out_frame] += frame_conv3d
 
     output = tf.stack(frame_results, axis=2)
-    print("Output: ", output.get_shape().as_list())
 
     if activation:
         output = activation(output)
@@ -207,21 +195,21 @@ if __name__ == "__main__":
         k2 = tf.get_default_graph().get_tensor_by_name(
             'conv4d_valid_3dchan2/kernel:0').eval().flatten()
 
-        print("conv4d at (0, 0, 0, 0): ", o[0,0,0,0,0,0])
+        print("conv4d at (0, 0, 0, 0): %s"%o[0,0,0,0,0,0])
         i0 = i[0,0,0,0:3,0:3,0:3].flatten()
         i1 = i[0,0,1,0:3,0:3,0:3].flatten()
         i2 = i[0,0,2,0:3,0:3,0:3].flatten()
 
         compare = (i0*k0 + i1*k1 + i2*k2).sum()
-        print("manually computed value at (0, 0, 0, 0): ", compare)
+        print("manually computed value at (0, 0, 0, 0): %s"%compare)
 
-        print("conv4d at (4, 4, 4, 4): ", o[0,0,4,4,4,4])
+        print("conv4d at (4, 4, 4, 4): %s"%o[0,0,4,4,4,4])
         i0 = i[0,0,4,4:7,4:7,4:7].flatten()
         i1 = i[0,0,5,4:7,4:7,4:7].flatten()
         i2 = i[0,0,6,4:7,4:7,4:7].flatten()
 
         compare = (i0*k0 + i1*k1 + i2*k2).sum()
-        print("manually computed value at (4, 4, 4, 4): ", compare)
+        print("manually computed value at (4, 4, 4, 4): %s"%compare)
 
 
     output = conv4d(
@@ -239,14 +227,14 @@ if __name__ == "__main__":
         s.run(tf.global_variables_initializer())
         o = s.run(output)
 
-        print("conv4d at (0, 0, 0, 0): ", o[0,0,0,0,0,0])
+        print("conv4d at (0, 0, 0, 0): %s"%o[0,0,0,0,0,0])
         i0 = i[0,0,0:2,0:2,0:2,0:2]
-        print("manually computed value at (0, 0, 0, 0): ", i0.sum())
+        print("manually computed value at (0, 0, 0, 0): %s"%i0.sum())
 
-        print("conv4d at (5, 5, 5, 5): ", o[0,0,5,5,5,5])
+        print("conv4d at (5, 5, 5, 5): %s"%o[0,0,5,5,5,5])
         i5 = i[0,0,4:7,4:7,4:7,4:7]
-        print("manually computed value at (5, 5, 5, 5): ", i5.sum())
+        print("manually computed value at (5, 5, 5, 5): %s"%i5.sum())
 
-        print("conv4d at (9, 9, 9, 9): ", o[0,0,9,9,9,9])
+        print("conv4d at (9, 9, 9, 9): %s"%o[0,0,9,9,9,9])
         i9 = i[0,0,8:,8:,8:,8:]
-        print("manually computed value at (9, 9, 9, 9): ", i9.sum())
+        print("manually computed value at (9, 9, 9, 9): %s"%i9.sum())
