@@ -235,6 +235,6 @@ if __name__ == "__main__":
         i5 = i[0,0,4:7,4:7,4:7,4:7]
         print("manually computed value at (5, 5, 5, 5): %s"%i5.sum())
 
-        print("conv4d at (9, 9, 9, 9): %s"%o[0,0,9,9,9,9])
-        i9 = i[0,0,8:,8:,8:,8:]
-        print("manually computed value at (9, 9, 9, 9): %s"%i9.sum())
+        print("conv4d at (9, 10, 11, 12): %s"%o[0,0,9,10,11,12])
+        i9 = i[0,0,8:,9:,10:,11:]
+        print("manually computed value at (9, 10, 11, 12): %s"%i9.sum())
