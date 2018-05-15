@@ -53,7 +53,7 @@ def conv4d(
             k = [
                 [1,1,1],
                 [1,2,1],
-                [1,1,3],
+                [1,1,3]
             ]
 
             # convolve every row in I with every row in k, comments show output
@@ -61,26 +61,26 @@ def conv4d(
             (I*k[0]) = [
                 [0,0,0], # I[0] with k[0] ⇒ (k*I)[ 1] ✔
                 [2,3,2], # I[1] with k[0] ⇒ (k*I)[ 2] ✔
-                [2,2,1]  # I[2] with k[0] ⇒ (k*I)[ 3] ✔
-                [1,1,0]  # I[3] with k[0] ⇒ (k*I)[ 4] ✔
+                [2,2,1], # I[2] with k[0] ⇒ (k*I)[ 3] ✔
+                [1,1,0], # I[3] with k[0] ⇒ (k*I)[ 4] ✔
                 [0,1,1]  # I[4] with k[0] ⇒ (k*I)[ 5]
             ]
             (I*k[1]) = [
                 [0,0,0], # I[0] with k[1] ⇒ (k*I)[ 0] ✔
                 [3,4,3], # I[1] with k[1] ⇒ (k*I)[ 1] ✔
-                [3,3,1]  # I[2] with k[1] ⇒ (k*I)[ 2] ✔
-                [2,1,0]  # I[3] with k[1] ⇒ (k*I)[ 3] ✔
+                [3,3,1], # I[2] with k[1] ⇒ (k*I)[ 2] ✔
+                [2,1,0], # I[3] with k[1] ⇒ (k*I)[ 3] ✔
                 [0,1,2]  # I[4] with k[1] ⇒ (k*I)[ 4] ✔
             ]
             (I*k[2]) = [
                 [0,0,0], # I[0] with k[2] ⇒ (k*I)[-1]
                 [4,5,2], # I[1] with k[2] ⇒ (k*I)[ 0] ✔
-                [4,2,1]  # I[2] with k[2] ⇒ (k*I)[ 1] ✔
-                [1,1,0]  # I[3] with k[2] ⇒ (k*I)[ 2] ✔
+                [4,2,1], # I[2] with k[2] ⇒ (k*I)[ 1] ✔
+                [1,1,0], # I[3] with k[2] ⇒ (k*I)[ 2] ✔
                 [0,3,1]  # I[4] with k[2] ⇒ (k*I)[ 3] ✔
             ]
 
-            # sum the contributions of all valid output rows (row 2 here)
+            # the sum of all valid output rows gives k*I (here shown for row 2)
             (k*I)[2] = (
                 [2,3,2] +
                 [3,3,1] +
