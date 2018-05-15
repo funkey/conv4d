@@ -95,8 +95,6 @@ def conv4d(
     assert len(kernel_size) == 4, "4D kernel size expected"
     assert strides == (1, 1, 1, 1), (
         "Strides other than 1 not yet implemented")
-    assert padding == 'valid', (
-        "Padding other than 'valid' not yet implemented")
     assert data_format == 'channels_last', (
         "Data format other than 'channels_last' not yet implemented")
     assert dilation_rate == (1, 1, 1, 1), (
@@ -110,16 +108,19 @@ def conv4d(
     (c_k, d_k, h_k, w_k) = kernel_size
 
     # output size for 'valid' convolution
-    (c_o, d_o, h_o, w_o) = (
-        c_i - c_k + 1,
-        d_i - d_k + 1,
-        h_i - h_k + 1,
-        w_i - w_k + 1
-    )
+    if padding == 'valid':
+        (c_o, d_o, h_o, w_o) = (
+            c_i - c_k + 1,
+            d_i - d_k + 1,
+            h_i - h_k + 1,
+            w_i - w_k + 1
+        )
+    else:
+        (c_o, d_o, h_o, w_o) = (c_i, d_i, h_i, w_i)
 
-    print("Input shape : ", (b, c_i, d_i, h_i, w_i))
-    print("Kernel shape: ", (c_k, d_k, h_k, w_k))
-    print("Output shape: ", (b, c_o*filters, d_o, h_o, w_o))
+    # print("Input shape : ", (b, c_i, d_i, h_i, w_i))
+    # print("Kernel shape: ", (c_k, d_k, h_k, w_k))
+    # print("Output shape: ", (b, c_o*filters, d_o, h_o, w_o))
 
     # convolve each kernel channel i with each input channel j
     channel_results = [ None ]*c_o
@@ -167,7 +168,7 @@ def conv4d(
                 channel_results[out_channel] += channel_conv3d
 
     output = tf.concat(channel_results, axis=1)
-    print("Output: ", output.get_shape().as_list())
+    # print("Output: ", output.get_shape().as_list())
 
     if activation:
         output = activation(output)
@@ -186,7 +187,46 @@ if __name__ == "__main__":
         input,
         1,
         (3, 3, 3, 3),
-        bias_initializer=bias_init)
+        bias_initializer=bias_init,
+        name='conv4d_valid')
+
+    with tf.Session() as s:
+
+        s.run(tf.global_variables_initializer())
+        o = s.run(output)
+
+        k0 = tf.get_default_graph().get_tensor_by_name(
+            'conv4d_valid_3dchan0/kernel:0').eval().flatten()
+        k1 = tf.get_default_graph().get_tensor_by_name(
+            'conv4d_valid_3dchan1/kernel:0').eval().flatten()
+        k2 = tf.get_default_graph().get_tensor_by_name(
+            'conv4d_valid_3dchan2/kernel:0').eval().flatten()
+
+        print("conv4d at (0, 0, 0, 0): ", o[0,0,0,0,0])
+        i0 = i[0,0,0:3,0:3,0:3].flatten()
+        i1 = i[0,1,0:3,0:3,0:3].flatten()
+        i2 = i[0,2,0:3,0:3,0:3].flatten()
+
+        compare = (i0*k0 + i1*k1 + i2*k2).sum()
+        print("manually computed value at (0, 0, 0, 0): ", compare)
+
+        print("conv4d at (4, 4, 4, 4): ", o[0,4,4,4,4])
+        i0 = i[0,4,4:7,4:7,4:7].flatten()
+        i1 = i[0,5,4:7,4:7,4:7].flatten()
+        i2 = i[0,6,4:7,4:7,4:7].flatten()
+
+        compare = (i0*k0 + i1*k1 + i2*k2).sum()
+        print("manually computed value at (4, 4, 4, 4): ", compare)
+
+
+    output = conv4d(
+        input,
+        1,
+        (3, 3, 3, 3),
+        padding='same',
+        kernel_initializer=tf.constant_initializer(1),
+        bias_initializer=bias_init,
+        name='conv4d_same')
 
     with tf.Session() as s:
 
@@ -194,16 +234,13 @@ if __name__ == "__main__":
         o = s.run(output)
 
         print("conv4d at (0, 0, 0, 0): ", o[0,0,0,0,0])
-        i0 = i[0,0,0:3,0:3,0:3].flatten()
-        i1 = i[0,1,0:3,0:3,0:3].flatten()
-        i2 = i[0,2,0:3,0:3,0:3].flatten()
+        i0 = i[0,0:2,0:2,0:2,0:2]
+        print("manually computed value at (0, 0, 0, 0): ", i0.sum())
 
-        k0 = tf.get_default_graph().get_tensor_by_name(
-            'conv4d_3dchan0/kernel:0').eval().flatten()
-        k1 = tf.get_default_graph().get_tensor_by_name(
-            'conv4d_3dchan1/kernel:0').eval().flatten()
-        k2 = tf.get_default_graph().get_tensor_by_name(
-            'conv4d_3dchan2/kernel:0').eval().flatten()
+        print("conv4d at (5, 5, 5, 5): ", o[0,5,5,5,5])
+        i5 = i[0,4:7,4:7,4:7,4:7]
+        print("manually computed value at (5, 5, 5, 5): ", i5.sum())
 
-        compare = (i0*k0 + i1*k1 + i2*k2).sum()
-        print("manually computed value at (0, 0, 0, 0): ", compare)
+        print("conv4d at (9, 9, 9, 9): ", o[0,9,9,9,9])
+        i9 = i[0,8:,8:,8:,8:]
+        print("manually computed value at (9, 9, 9, 9): ", i9.sum())
